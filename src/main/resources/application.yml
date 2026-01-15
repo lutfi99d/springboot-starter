@@ -9,6 +9,6 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:change-me}
+    secret: ${JWT_SECRET}
     access-exp-minutes: ${JWT_ACCESS_EXP_MINUTES:15}
     refresh-exp-days: ${JWT_REFRESH_EXP_DAYS:7}
