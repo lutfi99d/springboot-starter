@@ -15,6 +15,12 @@ import javax.crypto.SecretKey
 class JwtService(
     private val appProperties: AppProperties
 ) {
+    private companion object {
+        const val CLAIM_TYPE = "type"
+        const val CLAIM_ROLES = "roles"
+        const val CLAIM_VERSION = "ver"
+    }
+
     private val secretKey: SecretKey by lazy {
         Keys.hmacShaKeyFor(appProperties.jwt.secret.toByteArray(StandardCharsets.UTF_8))
     }
@@ -22,8 +28,10 @@ class JwtService(
     fun generateToken(
         subject: String,
         type: TokenType,
+        tokenVersion: Int,
         roles: List<String> = emptyList()
     ): String {
+
         val now = Instant.now()
         val exp = when (type) {
             TokenType.ACCESS -> now.plus(appProperties.jwt.accessExpMinutes, ChronoUnit.MINUTES)
@@ -34,11 +42,13 @@ class JwtService(
             .subject(subject)
             .issuedAt(Date.from(now))
             .expiration(Date.from(exp))
-            .claim("type", type.name)
-            .claim("roles", roles)
-            .signWith(secretKey) //
+            .claim(CLAIM_TYPE, type.name)
+            .claim(CLAIM_ROLES, roles)
+            .claim(CLAIM_VERSION, tokenVersion)
+            .signWith(secretKey)
             .compact()
     }
+
 
     fun parseClaims(token: String): Claims =
         Jwts.parser()
@@ -49,7 +59,7 @@ class JwtService(
 
     fun isValid(token: String, expectedType: TokenType? = null): Boolean {
         val claims = parseClaims(token)
-        val tokenType = claims["type"]?.toString()
+        val tokenType = claims[CLAIM_TYPE]?.toString()
         if (expectedType != null && tokenType != expectedType.name) return false
 
         val exp = claims.expiration?.toInstant() ?: return false
@@ -60,11 +70,22 @@ class JwtService(
         parseClaims(token).subject
 
     fun getRoles(token: String): List<String> {
-        val rolesAny = parseClaims(token)["roles"] ?: return emptyList()
+        val rolesAny = parseClaims(token)[CLAIM_ROLES] ?: return emptyList()
         @Suppress("UNCHECKED_CAST")
         return when (rolesAny) {
             is List<*> -> rolesAny.filterIsInstance<String>()
             else -> emptyList()
         }
     }
+
+    fun getTokenVersion(token: String): Int {
+        val ver = parseClaims(token)[CLAIM_VERSION] ?: return 0
+        return when (ver) {
+            is Int -> ver
+            is Number -> ver.toInt()
+            is String -> ver.toIntOrNull() ?: 0
+            else -> 0
+        }
+    }
+
 }
