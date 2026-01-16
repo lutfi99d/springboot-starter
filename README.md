@@ -235,6 +235,7 @@ The project provides standard DTOs for error responses (e.g., error code + messa
 - consistent client experience (frontend/mobile)
 - easier debugging and logging
 - less duplicated try/catch logic in controllers
+
 ## Configuration & Profiles
 
 This project uses multiple Spring profiles to manage environment-specific configuration.
