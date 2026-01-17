@@ -94,7 +94,11 @@ class AuthService(
         return ProfileResponse(
             id = user.id!!,
             email = user.email,
-            role = user.role
+            role = user.role,
+            updatedAt = user.updatedAt,
+            createdAt = user.createdAt,
+            disabledAt = user.disabledAt,
+            tokenVersion = user.tokenVersion
         )
     }
 
