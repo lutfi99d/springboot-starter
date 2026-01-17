@@ -43,7 +43,8 @@ class AuthService(
     fun login(email: String, password: String): AuthResponse {
         val normalizedEmail = email.trim().lowercase()
 
-        val user = userRepository.findByEmail(normalizedEmail)
+        val user = userRepository.findByEmailAndDisabledAtIsNull(normalizedEmail)
+
             ?: throw BadRequestException("Invalid email or password")
 
         if (!passwordEncoder.matches(password, user.passwordHash)) {
@@ -66,7 +67,7 @@ class AuthService(
 
         val tokenVersion = jwtService.getTokenVersion(refreshToken)
 
-        val user = userRepository.findById(userId).orElse(null)
+        val user = userRepository.findByIdAndDisabledAtIsNull(userId)
             ?: throw NotFoundException("User not found")
 
         // logoutAll support

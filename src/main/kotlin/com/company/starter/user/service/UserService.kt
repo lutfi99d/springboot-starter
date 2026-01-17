@@ -25,7 +25,8 @@ class UserService(
             Sort.by(sortDir, sortField)
         )
 
-        return userRepository.findAll(pageable)
+        return userRepository.findAllByDisabledAtIsNull(pageable)
+
             .map { u ->
                 UserResponse(
                     id = u.id!!,
@@ -56,6 +57,9 @@ class UserService(
             ?: throw NotFoundException("User not found")
 
         user.role = newRole
+
+        val now = OffsetDateTime.now()
+        user.updatedAt = now
         val saved = userRepository.save(user)
 
         return UserResponse(
@@ -70,7 +74,9 @@ class UserService(
     fun softDeleteUser(id: Long) {
         val user = userRepository.findByIdAndDisabledAtIsNull(id)
             ?: throw NotFoundException("User not found")
-        user.disabledAt = OffsetDateTime.now()
+        val now = OffsetDateTime.now()
+        user.disabledAt = now
+        user.updatedAt = now
         userRepository.save(user)
     }
 
