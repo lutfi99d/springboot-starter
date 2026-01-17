@@ -58,11 +58,12 @@ class JwtAuthenticationFilter(
                     else -> 0
                 }
 
-                val user = userRepository.findById(userId).orElse(null)
+                val user = userRepository.findByIdAndDisabledAtIsNull(userId)
                 if (user == null || user.tokenVersion != tokenVersion) {
                     filterChain.doFilter(request, response)
                     return
                 }
+
 
                 val roles: List<String> = when (val r = claims["roles"]) {
                     is List<*> -> r.filterIsInstance<String>()
