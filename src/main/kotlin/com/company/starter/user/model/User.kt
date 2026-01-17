@@ -23,7 +23,7 @@ class User(
     var tokenVersion: Int = 0,
 
     @Id
-    @UuidGenerator
+    @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null,
 
     @Column(name = "created_at", nullable = false)
