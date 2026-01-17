@@ -80,7 +80,7 @@ class AuthService(
 
     @Transactional
     fun logoutAll(currentUserId: Long) {
-        val user = userRepository.findById(currentUserId).orElse(null)
+        val user = userRepository.findByIdAndDisabledAtIsNull(currentUserId)
             ?: throw NotFoundException("User not found")
 
         user.tokenVersion += 1
@@ -88,7 +88,7 @@ class AuthService(
     }
 
     fun profile(currentUserId: Long): ProfileResponse {
-        val user = userRepository.findById(currentUserId).orElse(null)
+        val user = userRepository.findByIdAndDisabledAtIsNull(currentUserId)
             ?: throw NotFoundException("User not found")
 
         return ProfileResponse(
