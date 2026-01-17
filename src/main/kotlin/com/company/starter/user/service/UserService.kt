@@ -4,6 +4,7 @@ import com.company.starter.common.error.exceptions.NotFoundException
 import com.company.starter.common.pagination.PaginationResponse
 import com.company.starter.common.pagination.toPaginationResponse
 import com.company.starter.user.dto.UserResponse
+import com.company.starter.user.model.Role
 import com.company.starter.user.repository.UserRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -49,6 +50,21 @@ class UserService(
         )
     }
 
+    fun changeRole(id: Long, newRole: Role): UserResponse {
+        val user = userRepository.findByIdAndDisabledAtIsNull(id)
+            ?: throw NotFoundException("User not found")
+
+        user.role = newRole
+        val saved = userRepository.save(user)
+
+        return UserResponse(
+            id = saved.id!!,
+            email = saved.email,
+            role = saved.role,
+            createdAt = saved.createdAt,
+            updatedAt = saved.updatedAt
+        )
+    }
 
     private fun parseSort(sort: String): Pair<String, Sort.Direction> {
         // sort format: "createdAt,desc" or "email,asc"
