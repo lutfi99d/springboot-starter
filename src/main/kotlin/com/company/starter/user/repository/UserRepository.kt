@@ -1,7 +1,6 @@
 package com.company.starter.user.repository
 
 import com.company.starter.user.model.User
-import org.apache.el.stream.Optional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
