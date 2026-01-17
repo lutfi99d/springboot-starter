@@ -28,5 +28,8 @@ class User(
     var createdAt: OffsetDateTime = OffsetDateTime.now(),
 
     @Column(name = "updated_at", nullable = false)
-    var updatedAt: OffsetDateTime = OffsetDateTime.now()
+    var updatedAt: OffsetDateTime = OffsetDateTime.now(),
+
+    @Column(name = "disabled_at")
+    var disabledAt: OffsetDateTime? = null
 )

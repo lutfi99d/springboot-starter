@@ -1,5 +1,6 @@
 package com.company.starter.user.service
 
+import com.company.starter.common.error.exceptions.NotFoundException
 import com.company.starter.common.pagination.PaginationResponse
 import com.company.starter.common.pagination.toPaginationResponse
 import com.company.starter.user.dto.UserResponse
@@ -34,6 +35,20 @@ class UserService(
             }
             .toPaginationResponse()
     }
+
+    fun getUserById(id: Long): UserResponse {
+        val user = userRepository.findByIdAndDisabledAtIsNull(id)
+            ?: throw NotFoundException("User not found")
+
+        return UserResponse(
+            id = user.id!!,
+            email = user.email,
+            role = user.role,
+            createdAt = user.createdAt,
+            updatedAt = user.updatedAt
+        )
+    }
+
 
     private fun parseSort(sort: String): Pair<String, Sort.Direction> {
         // sort format: "createdAt,desc" or "email,asc"

@@ -6,6 +6,7 @@ import com.company.starter.user.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -25,4 +26,13 @@ class UsersController(
     ): ResponseEntity<PaginationResponse<UserResponse>> {
         return ResponseEntity.ok(userService.listUsers(page, size, sort))
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun getUserById(@PathVariable id: Long): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.getUserById(id))
+    }
+
+
+
 }
