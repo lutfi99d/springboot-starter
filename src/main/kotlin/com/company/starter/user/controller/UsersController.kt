@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -35,7 +36,7 @@ class UsersController(
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    fun getUserById(@PathVariable id: Long): ResponseEntity<UserResponse> {
+    fun getUserById(@PathVariable id: UUID): ResponseEntity<UserResponse> {
         return ResponseEntity.ok(userService.getUserById(id))
     }
 
@@ -43,7 +44,7 @@ class UsersController(
     @PatchMapping("/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     fun changeRole(
-        @PathVariable id: Long,
+        @PathVariable id: UUID,
         @Valid @RequestBody body: ChangeRoleRequest
     ): ResponseEntity<UserResponse> {
         return ResponseEntity.ok(userService.changeRole(id, body.role!!))
@@ -51,7 +52,7 @@ class UsersController(
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {
+    fun deleteUser(@PathVariable id: UUID): ResponseEntity<Void> {
         userService.softDeleteUser(id)
         return ResponseEntity.noContent().build()
     }

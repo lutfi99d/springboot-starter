@@ -6,6 +6,7 @@ import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
+import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -48,7 +49,7 @@ class AuthController(
         return ResponseEntity.ok(authService.profile(userId))
     }
 
-    private fun currentUserId(): Long {
+    private fun currentUserId(): UUID {
         val auth = SecurityContextHolder.getContext().authentication
             ?: throw IllegalStateException("No authentication found")
 
@@ -56,6 +57,10 @@ class AuthController(
         val principal = auth.principal?.toString()
             ?: throw IllegalStateException("No principal found")
 
-        return principal.toLong()
+        return try {
+            UUID.fromString(principal)
+        } catch (_: IllegalArgumentException) {
+            throw IllegalStateException("Invalid principal userId")
+        }
     }
 }

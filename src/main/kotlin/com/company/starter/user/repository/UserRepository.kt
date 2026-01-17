@@ -5,13 +5,14 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
-interface UserRepository : JpaRepository<User, Long> {
+interface UserRepository : JpaRepository<User, UUID> {
     fun existsByEmail(email: String): Boolean
     fun findByEmail(email: String): User?
-    fun findByIdAndDisabledAtIsNull(id: Long): User?
+    fun findByIdAndDisabledAtIsNull(id: UUID): User?
     fun findByEmailAndDisabledAtIsNull(email: String): User?
     fun findAllByDisabledAtIsNull(pageable: Pageable): Page<User>
-    fun existsByIdAndDisabledAtIsNull(id: Long): Boolean
+    fun existsByIdAndDisabledAtIsNull(id: UUID): Boolean
 }

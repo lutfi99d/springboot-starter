@@ -12,6 +12,7 @@ import com.company.starter.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class AuthService(
@@ -62,8 +63,12 @@ class AuthService(
 
         val claims = jwtService.parseClaims(refreshToken)
 
-        val userId = claims.subject?.toLongOrNull()
-            ?: throw BadRequestException("Invalid refresh token")
+
+        val userId = try {
+            UUID.fromString(claims.subject)
+        } catch (_: Exception) {
+            throw BadRequestException("Invalid refresh token")
+        }
 
         val tokenVersion = jwtService.getTokenVersion(refreshToken)
 
@@ -79,7 +84,7 @@ class AuthService(
     }
 
     @Transactional
-    fun logoutAll(currentUserId: Long) {
+    fun logoutAll(currentUserId: UUID) {
         val user = userRepository.findByIdAndDisabledAtIsNull(currentUserId)
             ?: throw NotFoundException("User not found")
 
@@ -87,7 +92,7 @@ class AuthService(
         userRepository.save(user)
     }
 
-    fun profile(currentUserId: Long): ProfileResponse {
+    fun profile(currentUserId: UUID): ProfileResponse {
         val user = userRepository.findByIdAndDisabledAtIsNull(currentUserId)
             ?: throw NotFoundException("User not found")
 

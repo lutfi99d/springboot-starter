@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import java.util.UUID
 
 @Component
 class JwtAuthenticationFilter(
@@ -46,7 +47,10 @@ class JwtAuthenticationFilter(
                     return
                 }
 
-                val userId = subject.toLongOrNull() ?: run {
+
+                val userId = try {
+                    UUID.fromString(subject)
+                } catch (_: IllegalArgumentException) {
                     filterChain.doFilter(request, response)
                     return
                 }

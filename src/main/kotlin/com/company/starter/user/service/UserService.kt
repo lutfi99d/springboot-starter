@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
+import java.util.UUID
 
 @Service
 class UserService(
@@ -39,7 +40,7 @@ class UserService(
             .toPaginationResponse()
     }
 
-    fun getUserById(id: Long): UserResponse {
+    fun getUserById(id: UUID): UserResponse {
         val user = userRepository.findByIdAndDisabledAtIsNull(id)
             ?: throw NotFoundException("User not found")
 
@@ -52,7 +53,7 @@ class UserService(
         )
     }
 
-    fun changeRole(id: Long, newRole: Role): UserResponse {
+    fun changeRole(id: UUID, newRole: Role): UserResponse {
         val user = userRepository.findByIdAndDisabledAtIsNull(id)
             ?: throw NotFoundException("User not found")
 
@@ -71,7 +72,7 @@ class UserService(
         )
     }
 
-    fun softDeleteUser(id: Long) {
+    fun softDeleteUser(id: UUID) {
         val user = userRepository.findByIdAndDisabledAtIsNull(id)
             ?: throw NotFoundException("User not found")
         val now = OffsetDateTime.now()
