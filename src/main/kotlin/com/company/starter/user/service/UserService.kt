@@ -9,6 +9,7 @@ import com.company.starter.user.repository.UserRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
 
 @Service
 class UserService(
@@ -64,6 +65,13 @@ class UserService(
             createdAt = saved.createdAt,
             updatedAt = saved.updatedAt
         )
+    }
+
+    fun softDeleteUser(id: Long) {
+        val user = userRepository.findByIdAndDisabledAtIsNull(id)
+            ?: throw NotFoundException("User not found")
+        user.disabledAt = OffsetDateTime.now()
+        userRepository.save(user)
     }
 
     private fun parseSort(sort: String): Pair<String, Sort.Direction> {
