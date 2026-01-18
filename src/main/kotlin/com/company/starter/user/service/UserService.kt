@@ -27,7 +27,6 @@ class UserService(
         )
 
         return userRepository.findAllByDisabledAtIsNull(pageable)
-
             .map { u ->
                 UserResponse(
                     id = u.id!!,
@@ -75,6 +74,7 @@ class UserService(
     fun softDeleteUser(id: UUID) {
         val user = userRepository.findByIdAndDisabledAtIsNull(id)
             ?: throw NotFoundException("User not found")
+
         val now = OffsetDateTime.now()
         user.disabledAt = now
         user.updatedAt = now
@@ -82,7 +82,6 @@ class UserService(
     }
 
     private fun parseSort(sort: String): Pair<String, Sort.Direction> {
-        // sort format: "createdAt,desc" or "email,asc"
         val parts = sort.split(",").map { it.trim() }
         val field = parts.getOrNull(0).takeUnless { it.isNullOrBlank() } ?: "createdAt"
         val dir = when (parts.getOrNull(1)?.lowercase()) {
