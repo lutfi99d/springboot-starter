@@ -3,6 +3,8 @@ package com.company.starter.auth.controller
 import com.company.starter.auth.dto.*
 import com.company.starter.auth.service.AuthService
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
@@ -14,17 +16,19 @@ class AuthController(
     private val authService: AuthService
 ) {
 
-    @PostMapping("/register")
+    @PostMapping("/register",consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun register(@Valid @RequestBody req: RegisterRequest): ResponseEntity<AuthResponse> {
-        return ResponseEntity.ok(authService.register(req.email, req.password))
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(authService.register(req.email, req.password))
+
     }
 
-    @PostMapping("/login")
+    @PostMapping("/login",consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun login(@Valid @RequestBody req: LoginRequest): ResponseEntity<AuthResponse> {
         return ResponseEntity.ok(authService.login(req.email, req.password))
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("/refresh",consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun refresh(@Valid @RequestBody req: RefreshRequest): ResponseEntity<AuthResponse> {
         return ResponseEntity.ok(authService.refresh(req.refreshToken))
     }

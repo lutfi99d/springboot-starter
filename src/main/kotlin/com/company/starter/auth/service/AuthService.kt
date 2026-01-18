@@ -3,6 +3,7 @@ package com.company.starter.auth.service
 import com.company.starter.auth.dto.AuthResponse
 import com.company.starter.auth.dto.ProfileResponse
 import com.company.starter.common.error.exceptions.BadRequestException
+import com.company.starter.common.error.exceptions.ConflictException
 import com.company.starter.common.error.exceptions.NotFoundException
 import com.company.starter.security.jwt.JwtService
 import com.company.starter.security.jwt.TokenType
@@ -26,7 +27,7 @@ class AuthService(
         val normalizedEmail = email.trim().lowercase()
 
         if (userRepository.existsByEmail(normalizedEmail)) {
-            throw BadRequestException("Email already exists")
+            throw ConflictException("Email already exists")
         }
 
         val user = User(
