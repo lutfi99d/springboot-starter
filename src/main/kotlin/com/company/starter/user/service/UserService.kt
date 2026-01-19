@@ -1,5 +1,6 @@
 package com.company.starter.user.service
 
+import com.company.starter.common.error.exceptions.BadRequestException
 import com.company.starter.common.error.exceptions.NotFoundException
 import com.company.starter.common.pagination.PaginationResponse
 import com.company.starter.common.pagination.toPaginationResponse
@@ -16,13 +17,17 @@ import java.util.UUID
 class UserService(
     private val userRepository: UserRepository
 ) {
+    private val ALLOWED_SORT_FIELDS = setOf("createdAt", "updatedAt", "email", "role")
 
     fun listUsers(page: Int, size: Int, sort: String): PaginationResponse<UserResponse> {
+        val safePage = page.coerceIn(0, 100)
+        val safeSize = size.coerceIn(1, 50)
+
         val (sortField, sortDir) = parseSort(sort)
 
         val pageable = PageRequest.of(
-            page.coerceAtLeast(0),
-            size.coerceIn(1, 100),
+            safePage,
+            safeSize,
             Sort.by(sortDir, sortField)
         )
 
@@ -83,11 +88,20 @@ class UserService(
 
     private fun parseSort(sort: String): Pair<String, Sort.Direction> {
         val parts = sort.split(",").map { it.trim() }
-        val field = parts.getOrNull(0).takeUnless { it.isNullOrBlank() } ?: "createdAt"
+        val field = parts.getOrNull(0)?.takeIf { it.isNotBlank() } ?: "createdAt"
+
+        if (field !in ALLOWED_SORT_FIELDS) {
+            throw BadRequestException("Invalid sort field '$field'. Allowed: ${ALLOWED_SORT_FIELDS.joinToString(", ")}")
+        }
+
         val dir = when (parts.getOrNull(1)?.lowercase()) {
             "asc" -> Sort.Direction.ASC
-            else -> Sort.Direction.DESC
+            "desc" -> Sort.Direction.DESC
+            null, "" -> Sort.Direction.DESC
+            else -> throw BadRequestException("Invalid sort direction '${parts[1]}'. Use 'asc' or 'desc'")
         }
+
         return field to dir
     }
 }
+

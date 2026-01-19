@@ -145,6 +145,8 @@ class GlobalExceptionHandler {
         )
     }
 
+    
+
     private fun buildError(
         errorCode: ErrorCode,
         message: String,
