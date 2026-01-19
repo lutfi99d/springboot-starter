@@ -5,6 +5,8 @@ import com.company.starter.security.handlers.RestAuthenticationEntryPoint
 import com.company.starter.security.jwt.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -12,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 
 @Configuration
 @EnableWebSecurity
@@ -22,13 +23,6 @@ class SecurityConfig(
     private val authenticationEntryPoint: RestAuthenticationEntryPoint,
     private val accessDeniedHandler: RestAccessDeniedHandler
 ) {
-
-    private val publicEndpoints = arrayOf(
-        "/api/v1/auth/**",
-        "/error",
-        "/swagger-ui/**",
-        "/v3/api-docs/**"
-    )
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -41,7 +35,13 @@ class SecurityConfig(
                 it.accessDeniedHandler(accessDeniedHandler)
             }
             .authorizeHttpRequests {
-                it.requestMatchers(*publicEndpoints).permitAll()
+                it.requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
+
+                it.requestMatchers("/error", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                 it.anyRequest().authenticated()
             }
             .httpBasic { it.disable() }

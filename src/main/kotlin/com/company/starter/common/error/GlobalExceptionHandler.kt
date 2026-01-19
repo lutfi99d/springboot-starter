@@ -133,7 +133,17 @@ class GlobalExceptionHandler {
             request = request
         )
     }
-
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgument(
+        ex: IllegalArgumentException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        return buildError(
+            errorCode = ErrorCode.BAD_REQUEST,
+            message = ex.message ?: "Invalid request",
+            request = request
+        )
+    }
 
     private fun buildError(
         errorCode: ErrorCode,

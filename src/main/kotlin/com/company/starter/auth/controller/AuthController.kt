@@ -8,6 +8,8 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
+import com.company.starter.common.error.exceptions.UnauthorizedException
+import org.springframework.security.core.Authentication
 import java.util.UUID
 
 @RestController
@@ -28,18 +30,17 @@ class AuthController(
         return ResponseEntity.ok(authService.login(req.email, req.password))
     }
 
-    @PostMapping("/refresh",consumes = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("/refresh", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun refresh(@Valid @RequestBody req: RefreshRequest): ResponseEntity<AuthResponse> {
-        return ResponseEntity.ok(authService.refresh(req.refreshToken))
+        val token = requireNotNull(req.refreshToken) { "Refresh token is required" }
+        return ResponseEntity.ok(authService.refresh(token))
     }
 
-    // Option A: client-side logout (no server action)
     @PostMapping("/logout")
     fun logout(): ResponseEntity<MessageResponse> {
         return ResponseEntity.ok(MessageResponse("Logged out"))
     }
 
-    // Option B: invalidate all tokens by bumping token_version
     @PostMapping("/logout-all")
     fun logoutAll(): ResponseEntity<MessageResponse> {
         val userId = currentUserId()
@@ -52,19 +53,21 @@ class AuthController(
         val userId = currentUserId()
         return ResponseEntity.ok(authService.profile(userId))
     }
-
     private fun currentUserId(): UUID {
-        val auth = SecurityContextHolder.getContext().authentication
-            ?: throw IllegalStateException("No authentication found")
+        val auth: Authentication = SecurityContextHolder.getContext().authentication
+            ?: throw UnauthorizedException("Unauthorized")
 
-        // We store userId as principal string in the filter
+        if (!auth.isAuthenticated) {
+            throw UnauthorizedException("Unauthorized")
+        }
+
         val principal = auth.principal?.toString()
-            ?: throw IllegalStateException("No principal found")
+            ?: throw UnauthorizedException("Unauthorized")
 
         return try {
             UUID.fromString(principal)
         } catch (_: IllegalArgumentException) {
-            throw IllegalStateException("Invalid principal userId")
+            throw UnauthorizedException("Unauthorized")
         }
     }
 }

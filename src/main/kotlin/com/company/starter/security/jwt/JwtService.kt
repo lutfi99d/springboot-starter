@@ -58,13 +58,19 @@ class JwtService(
             .payload
 
     fun isValid(token: String, expectedType: TokenType? = null): Boolean {
-        val claims = parseClaims(token)
-        val tokenType = claims[CLAIM_TYPE]?.toString()
-        if (expectedType != null && tokenType != expectedType.name) return false
+        return try {
+            val claims = parseClaims(token)
 
-        val exp = claims.expiration?.toInstant() ?: return false
-        return exp.isAfter(Instant.now())
+            val tokenType = claims[CLAIM_TYPE]?.toString()
+            if (expectedType != null && tokenType != expectedType.name) return false
+
+            val exp = claims.expiration?.toInstant() ?: return false
+            exp.isAfter(Instant.now())
+        } catch (_: Exception) {
+            false
+        }
     }
+
 
     fun getSubject(token: String): String =
         parseClaims(token).subject

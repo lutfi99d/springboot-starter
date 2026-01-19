@@ -13,6 +13,9 @@ import com.company.starter.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.company.starter.common.error.exceptions.UnauthorizedException
+import java.time.Instant
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Service
@@ -57,13 +60,30 @@ class AuthService(
     }
 
     fun refresh(refreshToken: String): AuthResponse {
-        // validate refresh token
-        if (!jwtService.isValid(refreshToken, expectedType = TokenType.REFRESH)) {
+
+        // If it's not even JWT-like, treat as bad request (400)
+        if (refreshToken.count { it == '.' } != 2) {
             throw BadRequestException("Invalid refresh token")
         }
 
-        val claims = jwtService.parseClaims(refreshToken)
+        // Try parse claims; if fails => unauthorized (401)
+        val claims = try {
+            jwtService.parseClaims(refreshToken)
+        } catch (_: Exception) {
+            throw UnauthorizedException("Invalid refresh token")
+        }
 
+        // Check type
+        val type = claims["type"]?.toString()
+        if (type != TokenType.REFRESH.name) {
+            throw UnauthorizedException("Invalid refresh token")
+        }
+
+        // Check exp
+        val exp = claims.expiration?.toInstant() ?: throw UnauthorizedException("Invalid refresh token")
+        if (!exp.isAfter(Instant.now())) {
+            throw UnauthorizedException("Invalid refresh token")
+        }
 
         val userId = try {
             UUID.fromString(claims.subject)
@@ -71,14 +91,18 @@ class AuthService(
             throw BadRequestException("Invalid refresh token")
         }
 
-        val tokenVersion = jwtService.getTokenVersion(refreshToken)
+        val tokenVersion = when (val v = claims["ver"]) {
+            is Int -> v
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull() ?: 0
+            else -> 0
+        }
 
         val user = userRepository.findByIdAndDisabledAtIsNull(userId)
-            ?: throw NotFoundException("User not found")
+            ?: throw UnauthorizedException("Invalid refresh token")
 
-        // logoutAll support
         if (user.tokenVersion != tokenVersion) {
-            throw BadRequestException("Refresh token has been invalidated")
+            throw UnauthorizedException("Refresh token has been invalidated")
         }
 
         return issueTokens(user)
@@ -89,7 +113,10 @@ class AuthService(
         val user = userRepository.findByIdAndDisabledAtIsNull(currentUserId)
             ?: throw NotFoundException("User not found")
 
+        val now = OffsetDateTime.now()
         user.tokenVersion += 1
+        user.updatedAt = now
+
         userRepository.save(user)
     }
 
