@@ -15,7 +15,6 @@ class CorsConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
 
-        // support comma-separated origins in env: "http://a.com,http://b.com"
         val origins = corsProperties.allowedOrigins
             .split(",")
             .map { it.trim() }

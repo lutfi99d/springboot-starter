@@ -61,12 +61,10 @@ class AuthService(
 
     fun refresh(refreshToken: String): AuthResponse {
 
-        // If it's not even JWT-like, treat as bad request (400)
         if (refreshToken.count { it == '.' } != 2) {
             throw BadRequestException("Invalid refresh token")
         }
 
-        // Try parse claims; if fails => unauthorized (401)
         val claims = try {
             jwtService.parseClaims(refreshToken)
         } catch (_: Exception) {
