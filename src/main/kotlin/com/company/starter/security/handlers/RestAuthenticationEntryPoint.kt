@@ -21,6 +21,8 @@ class RestAuthenticationEntryPoint(
         response: HttpServletResponse,
         authException: AuthenticationException
     ) {
+        if (response.isCommitted) return
+
         val errorCode = ErrorCode.AUTH_UNAUTHORIZED
         val httpStatus = errorCode.httpStatus
 

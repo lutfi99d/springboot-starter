@@ -136,22 +136,24 @@ class AuthService(
     private fun issueTokens(user: User): AuthResponse {
         val userId = user.id ?: throw IllegalStateException("User id is null")
 
-        val roles = listOf(user.role.name)
-
         val access = jwtService.generateToken(
             subject = userId.toString(),
             type = TokenType.ACCESS,
             tokenVersion = user.tokenVersion,
-            roles = roles
+            roles = listOf(user.role.name)
         )
 
         val refresh = jwtService.generateToken(
             subject = userId.toString(),
             type = TokenType.REFRESH,
             tokenVersion = user.tokenVersion,
-            roles = roles
+            roles = emptyList()
         )
 
-        return AuthResponse(accessToken = access, refreshToken = refresh)
+        return AuthResponse(
+            accessToken = access,
+            refreshToken = refresh,
+            role = user.role
+        )
     }
 }
