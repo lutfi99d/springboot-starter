@@ -1,305 +1,265 @@
-# Starter (Spring Boot + Kotlin) 🚀
+# Starter (Spring Boot + Kotlin)
 
-A Spring Boot starter template built with Kotlin, PostgreSQL, Flyway, Spring Security, and JWT dependencies — designed to help you bootstrap backend projects quickly with a clean baseline.
+A production-ready Spring Boot starter built with Kotlin, PostgreSQL, Flyway, Spring Security, and JWT — designed to provide a secure, clean backend baseline.
+
+---
 
 ## Project Overview
 
-This repository is a **backend starter** built with Spring Boot and Kotlin. It provides a solid foundation for:
-- Standard Gradle Kotlin DSL project setup
-- PostgreSQL integration via Spring Data JPA
-- Flyway-based schema migrations (database-first approach)
-- `.env` loading via `spring-dotenv`
-- Centralized JWT configuration through typed `@ConfigurationProperties` (`app.jwt.*`)
+This repository provides a backend starter foundation with:
 
-> **Note:** JWT + Security dependencies are included, but the full authentication flow (controllers/filters/token issuing) is meant to be implemented on top of this starter according to your needs.
+- Spring Boot + Kotlin (Gradle Kotlin DSL)
+- PostgreSQL integration via Spring Data JPA
+- Flyway-based database migrations
+- Centralized configuration via typed `@ConfigurationProperties`
+- Production-grade JWT security baseline
+- Secure, predictable error handling
+
+This starter focuses on secure defaults and fail-fast behavior, leaving product-specific logic to be built on top.
+
+---
+
+## Security Baseline (Important)
+
+This starter includes a production-ready JWT security baseline.
+
+### Included
+- JWT parsing and validation
+- Fail-closed JWT filter (invalid tokens never continue)
+- Unified `401 Unauthorized` and `403 Forbidden` JSON responses
+- Startup validation for critical security configuration
+- No default admin credentials
+- Admin seeding is opt-in and restricted to non-production profiles
+
+### To Be Implemented By You
+- Login endpoint (issue tokens)
+- Refresh token rotation
+- Logout / token revocation
+- User registration and management
+
+---
 
 ## Tech Stack
 
-- **Language**: Kotlin 2.0.21
-- **Framework**: Spring Boot 3.4.1
-- **Java**: 21 (toolchain)
-- **Build Tool**: Gradle (Kotlin DSL)
-- **Database**: PostgreSQL
-- **ORM**: Spring Data JPA (Hibernate)
-- **Migrations**: Flyway
-- **Security**: Spring Security
-- **JWT Library**: JJWT 0.12.6
-- **.env Support**: `me.paulschwarz:spring-dotenv` 4.0.0
+- Language: Kotlin 2.0.21
+- Framework: Spring Boot 3.4.1
+- Java: 21
+- Build Tool: Gradle (Kotlin DSL)
+- Database: PostgreSQL
+- ORM: Spring Data JPA (Hibernate)
+- Migrations: Flyway
+- Security: Spring Security
+- JWT: JJWT 0.12.6
+
+---
 
 ## Requirements
 
-- **Java 21** (JDK 21+)
-- **PostgreSQL** (recommended 12+)
-- **Gradle** (optional — the project includes `./gradlew`)
+- Java 21+
+- PostgreSQL 12+
+- Gradle (optional — wrapper included)
+
+---
 
 ## Project Structure
 
-```text
-.
-├── build.gradle.kts
-├── settings.gradle.kts
-├── gradlew / gradlew.bat
-└── src
-    ├── main
-    │   ├── kotlin
-    │   │   └── com/company/starter
-    │   │       ├── StarterApplication.kt
-    │   │       ├── config
-    │   │       │   └── AppProperties.kt
-    │   │       ├── security
-    │   │       │   └── jwt
-    │   │       │       ├── JwtService.kt
-    │   │       │       └── TokenType.kt
-    │   │       └── common
-    │   │           ├── error
-    │   │           │   ├── ErrorCode.kt
-    │   │           │   ├── ErrorResponse.kt
-    │   │           │   ├── FieldErrorResponse.kt
-    │   │           │   ├── GlobalExceptionHandler.kt
-    │   │           │   └── exceptions
-    │   │           │       ├── BadRequestException.kt
-    │   │           │       ├── ConflictException.kt
-    │   │           │       ├── ForbiddenException.kt
-    │   │           │       ├── NotFoundException.kt
-    │   │           │       └── UnauthorizedException.kt
-    │   │           └── pagination
-    │   │               └── PaginationResponse.kt
-    │   └── resources
-    │       ├── application.yml
-    │       ├── application-local.yml
-    │       ├── application-dev.yml
-    │       ├── application-staging.yml
-    │       ├── application-prod.yml
-    │       └── db
-    │           └── migration
-    │               └── V1__init.sql
-    └── test
-        └── kotlin
-            └── com/company/starter
-                └── StarterApplicationTests.kt
-   
 ```
-> The package path (`com/company/starter`) is an example. Replace it with your actual package name.
+src
+├── main
+│   ├── kotlin
+│   │   └── com/company/starter
+│   │       ├── StarterApplication.kt
+│   │       ├── config
+│   │       │   ├── AppProperties.kt
+│   │       │   └── CorsProperties.kt
+│   │       ├── security
+│   │       │   └── jwt
+│   │       │       ├── JwtService.kt
+│   │       │       └── TokenType.kt
+│   │       └── common
+│   │           ├── error
+│   │           └── pagination
+│   └── resources
+│       ├── application.yml
+│       ├── application-local.yml
+│       ├── application-dev.yml
+│       ├── application-staging.yml
+│       ├── application-prod.yml
+│       └── db/migration
+└── test
+```
+
+Replace `com/company/starter` with your own package name.
+
+---
+
+## Configuration & Profiles
+
+The project uses profile-based configuration.
+
+Profiles:
+- local — local development
+- dev — shared development
+- staging — pre-production
+- prod — production
+
+Configuration files:
+- `application.yml`
+- `application-<profile>.yml`
+
+---
+
+## JWT Configuration (Fail-Fast)
+
+JWT configuration is mandatory and validated at startup.
+
+Required environment variables:
+
+```
+JWT_SECRET=change-me-to-a-strong-secret-32-characters-minimum
+JWT_ACCESS_EXP_MINUTES=30
+JWT_REFRESH_EXP_DAYS=7
+```
+
+Fail-fast rules:
+- The application will not start if `JWT_SECRET` is missing
+- The application will not start if `JWT_SECRET` is blank
+- The application will not start if `JWT_SECRET` is shorter than 32 characters
+
+---
 
 ## Local Setup
 
 ### 1) Create PostgreSQL Database
 
-Create a database and user (example):
-
-```sql
+```
 CREATE DATABASE starter_db;
 CREATE USER starter_user WITH ENCRYPTED PASSWORD 'starter_pass';
 GRANT ALL PRIVILEGES ON DATABASE starter_db TO starter_user;
 ```
 
-### 2) Configure Environment Variables (.env)
+---
 
-This project uses **spring-dotenv** to load environment variables from a `.env` file.
+### 2) Local Environment (.env)
 
-Create a `.env` file in the project root:
+Create a `.env` file (do not commit it):
 
-```env
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=starter_db
+```
+DB_URL=jdbc:postgresql://localhost:5432/starter_db
 DB_USERNAME=starter_user
 DB_PASSWORD=starter_pass
 
-# JWT
-JWT_SECRET=change-me-to-a-strong-secret
-JWT_ACCESS_EXP_MIN=30
+JWT_SECRET=change-me-to-a-strong-secret-32-characters-minimum
+JWT_ACCESS_EXP_MINUTES=30
 JWT_REFRESH_EXP_DAYS=7
 ```
-> Keep `.env` out of Git (recommended). Add it to `.gitignore`.
 
-### 3) Spring Profiles
+---
 
-The project uses profile-based configurations:
+### 3) Run Locally
 
-- `application.yml` (shared defaults)
-- `application-local.yml`
-- `application-dev.yml`
-- `application-staging.yml`
-- `application-prod.yml`
-
-Run with a profile (example: **local**):
-
-    ./gradlew bootRun --args='--spring.profiles.active=local'
+```
+./gradlew bootRun --args='--spring.profiles.active=local'
+```
 
 Or via IntelliJ:
-- Run Configuration → **Active profiles**: `local`
+- Run Configuration → Active profiles: local
 
-## Configuration (App Properties)
+---
 
-JWT settings are centralized under the `app` prefix (typed config via `@ConfigurationProperties`).
+## Admin Seeding (Local / Dev Only)
 
-Typical keys:
+Admin seeding is disabled by default in all environments.
 
-    app:
-      jwt:
-        secret: ${JWT_SECRET}
-        access-expiration-minutes: ${JWT_ACCESS_EXP_MIN}
-        refresh-expiration-days: ${JWT_REFRESH_EXP_DAYS}
+To explicitly seed an admin user:
 
-> Exact key names depend on `AppProperties.kt`. The intent is:
-> - one place for JWT config
-> - profile-aware overrides if needed
+```
+ADMIN_SEED_ENABLED=true
+ADMIN_EMAIL=admin@local.com
+ADMIN_PASSWORD=StrongPassword123!
+```
 
-## Build & Run
+Rules:
+- Admin seeding works only in local and dev profiles
+- No default admin credentials exist in the repository
+- If credentials are missing, seeding is skipped with a warning
+- Admin creation is idempotent
 
-### Build
+---
 
-    ./gradlew clean build
+## Database Migrations (Flyway)
 
-### Run (Default)
+- Migrations are located in `src/main/resources/db/migration`
+- Applied automatically at startup
+- Application fails fast if a migration fails
 
-    ./gradlew bootRun
+Example:
+```
+V1__init.sql
+V2__add_users.sql
+```
 
-### Run with Profile (Recommended)
-
-    ./gradlew bootRun --args='--spring.profiles.active=local'
-
-### Run Tests
-
-    ./gradlew test
-
-## Database & Flyway Migrations
-
-This project uses **Flyway** to manage database schema changes.
-
-### Where migrations live
-
-Migration scripts are located in:
-
-    src/main/resources/db/migration
-
-Example naming:
-
-    V1__init.sql
-    V2__add_users_table.sql
-
-### How migrations run
-
-- On application startup, Flyway automatically checks the database schema history table
-- Any new migration scripts will be applied in version order
-- If a migration fails, the application will stop (fail-fast)
-
-### Tips
-
-- Do not edit an already-applied migration in a shared environment
-- Create a new migration version instead (e.g., `V3__...sql`)
-- Keep migrations small and focused  
-
-## Security & JWT Notes
-
-Spring Security and JJWT dependencies are included to give you a solid starting point for authentication.
-
-### JWT Configuration
-
-JWT settings are configured via `app.jwt.*` and are typically loaded from environment variables.
-
-Common configuration intent:
-
-- `app.jwt.secret` → signing key (keep it strong and private)
-- `app.jwt.access-expiration-*` → access token lifetime
-- `app.jwt.refresh-expiration-*` → refresh token lifetime
-
-### Recommended Practices
-
-- Use different secrets per environment (local/dev/staging/prod)
-- Never commit secrets to Git
-- Keep access tokens short-lived and rely on refresh tokens for session continuity
-- If you deploy behind HTTPS (recommended), consider storing refresh tokens more securely (e.g., HttpOnly cookies)
-
-> This starter includes the dependencies and configuration baseline. The full auth flow (controllers, filters, token issuing/rotation) can be implemented on top of it based on your product needs.
+---
 
 ## Error Handling
 
-This starter includes a centralized error handling layer to keep API responses consistent and predictable.
+This starter includes centralized error handling:
+- Consistent JSON error responses
+- Standard HTTP status mapping
+- Field-level validation errors
+- Custom domain exceptions
 
-### Global Exception Handling
+---
 
-A `@RestControllerAdvice` handles:
-- common HTTP errors (bad request, unauthorized, forbidden, not found, conflict)
-- validation errors
-- custom domain exceptions
+## Build & Test
 
-### Error Response Model
+Build:
+```
+./gradlew clean build
+```
 
-The project provides standard DTOs for error responses (e.g., error code + message) and field-level validation details when applicable.
+Run tests:
+```
+./gradlew test
+```
 
-### Why this matters
+---
 
-- consistent client experience (frontend/mobile)
-- easier debugging and logging
-- less duplicated try/catch logic in controllers
+## Security Best Practices
 
-## Configuration & Profiles
+- Use different JWT secrets per environment
+- Never commit secrets to Git
+- Keep access tokens short-lived
+- Rotate refresh tokens if applicable
+- Use HTTPS in all non-local environments
 
-This project uses multiple Spring profiles to manage environment-specific configuration.
+---
 
-### Profiles
+## Suggested Next Steps
 
-- `local` → local development on your machine
-- `dev` → shared development environment
-- `staging` → pre-production testing
-- `prod` → production
+After cloning this starter:
+1. Implement authentication endpoints
+2. Add user domain and persistence
+3. Add role-based authorization
+4. Add audit logging
+5. Add health checks and metrics
 
-### Configuration Files
-
-- `src/main/resources/application.yml` → shared defaults
-- `src/main/resources/application-<profile>.yml` → profile overrides
-
-### dotenv
-
-With `spring-dotenv`, a `.env` file at the project root can provide environment variables locally without exporting them in your shell.
-
-Best practice:
-- use `.env` for local only
-- use your deployment platform secrets manager for dev/staging/prod
-
-## Next Steps (Suggested Roadmap)
-
-After cloning this starter, you can implement:
-
-1) **Authentication Module**
-    - login endpoint (issue access/refresh tokens)
-    - refresh endpoint (rotate tokens)
-    - logout endpoint (invalidate refresh token if you store it)
-
-2) **User Module**
-    - user entity + repository
-    - registration endpoint
-    - user profile endpoints
-
-3) **Security Hardening**
-    - request validation + rate limiting (if needed)
-    - method-level authorization (`@PreAuthorize`)
-    - audit logging for auth-sensitive operations
-
-4) **Observability**
-    - structured logging
-    - health checks / readiness probes
-    - metrics & tracing (optional)
-
-This starter is intentionally minimal: it gives you a clean baseline and leaves product-specific decisions to you.
+---
 
 ## Contributing
 
-Contributions are welcome. Suggested workflow:
+- Create feature branches
+- Keep pull requests small and focused
+- Add tests where relevant
+- Document security-related changes
 
-- Create a feature branch
-- Keep changes small and focused
-- Add/adjust tests where applicable
-- Open a pull request with a clear description
+---
 
 ## License
 
-Add a license that matches your intended usage (e.g., MIT, Apache-2.0, proprietary).
+Add a license that matches your intended usage (MIT, Apache-2.0, proprietary, etc.).
 
-If you choose MIT, add:
-- `LICENSE` file at the repository root
-- a short copyright notice
+---
 
+This starter is intentionally strict.
+Secure defaults and fail-fast behavior are prioritized over convenience.
