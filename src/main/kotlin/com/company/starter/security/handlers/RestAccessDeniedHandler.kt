@@ -21,6 +21,7 @@ class RestAccessDeniedHandler(
         response: HttpServletResponse,
         accessDeniedException: AccessDeniedException
     ) {
+        if (response.isCommitted) return
         val errorCode = ErrorCode.ACCESS_DENIED
         val httpStatus = errorCode.httpStatus
 
