@@ -21,3 +21,9 @@ app:
   admin:
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
+<<<<<<< HEAD
+=======
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+>>>>>>> c1fe282 (Fix security baseline: JWT fail-fast, CORS validation, admin seeding safeguards)
